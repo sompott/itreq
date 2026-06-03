@@ -1,0 +1,6 @@
+[2m00:00:37[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /itrequest/api/health[39m
+Error: connect ECONNREFUSED 127.0.0.1:5101
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1705:16)
+[2m00:01:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /itrequest/api/health[39m
+Error: connect ECONNREFUSED 127.0.0.1:5101
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1705:16)

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>สร้างคำขอ IT — ไกด์ทีละขั้น</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#1f2329; --muted:#646b76; --faint:#9aa1ab; --line:#e5e7ec;
+    --desk:#e9e7e2; --sheet:#ffffff;
+    --accent:oklch(0.52 0.11 244); --accent-d:oklch(0.44 0.12 244);
+    --accent-soft:oklch(0.96 0.025 244); --accent-line:oklch(0.84 0.06 244);
+    --ok:oklch(0.6 0.1 165);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{font-family:'Sarabun',sans-serif;color:var(--ink);background:var(--desk);
+    -webkit-font-smoothing:antialiased;}
+  #root{min-height:100vh;}
+  /* ── shell ── */
+  .shell{display:flex;min-height:100vh;}
+  /* rail */
+  .rail{width:272px;flex:0 0 auto;background:var(--sheet);border-right:1px solid var(--line);
+    padding:26px 22px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:30px;}
+  .brand .mk{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .brand b{font-size:15.5px;font-weight:600;}
+  .brand span{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:1px;}
+  .steps{display:flex;flex-direction:column;gap:2px;}
+  .step{display:flex;gap:13px;padding:11px 12px;border-radius:11px;cursor:pointer;border:none;background:none;
+    font:inherit;text-align:left;width:100%;align-items:center;transition:background .15s;}
+  .step:hover{background:#f4f5f7;}
+  .step.cur{background:var(--accent-soft);}
+  .sdot{width:29px;height:29px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-size:13.5px;font-weight:700;border:2px solid var(--line);color:var(--faint);background:#fff;transition:all .15s;}
+  .step.done .sdot{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .step.cur .sdot{border-color:var(--accent);color:var(--accent);}
+  .slabel{display:flex;flex-direction:column;min-width:0;flex:1;}
+  .slabel .t{font-size:14.5px;font-weight:600;line-height:1.2;}
+  .step:not(.cur):not(.done) .slabel .t{color:var(--muted);font-weight:500;}
+  .slabel .s{font-size:11.5px;color:var(--faint);margin-top:2px;}
+  .railtip{margin-top:auto;font-size:12.5px;color:var(--muted);background:var(--accent-soft);
+    border-radius:11px;padding:13px 15px;line-height:1.55;}
+  /* main */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{height:5px;background:var(--line);position:sticky;top:0;z-index:5;}
+  .topbar i{display:block;height:100%;background:var(--accent);transition:width .4s cubic-bezier(.3,.8,.3,1);}
+  .stage{flex:1;padding:30px 24px 120px;display:flex;justify-content:center;}
+  /* sheet */
+  .sheet{width:100%;max-width:760px;background:var(--sheet);border:1px solid var(--line);border-radius:7px;
+    box-shadow:0 1px 0 rgba(0,0,0,.03),0 22px 55px -28px rgba(40,40,30,.45);padding:46px 56px 44px;}
+  .doc-hd{display:flex;align-items:flex-start;gap:15px;border-bottom:2.5px solid var(--ink);padding-bottom:18px;}
+  .seal{width:50px;height:50px;border-radius:9px;border:1.5px solid var(--accent-line);background:var(--accent-soft);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:0 0 auto;}
+  .doc-hd .mid{flex:1;}
+  .org{font-size:12.5px;color:var(--muted);}
+  .doctitle{font-family:'Noto Serif Thai',serif;font-size:24px;font-weight:700;margin:1px 0 0;letter-spacing:-.01em;}
+  .docmeta{text-align:right;font-size:12.5px;color:var(--muted);line-height:1.85;flex:0 0 auto;white-space:nowrap;}
+  .docmeta b{color:var(--ink);font-weight:600;}
+  /* requester strip */
+  .reqstrip{display:flex;gap:30px;margin-top:18px;}
+  .reqstrip .fl{flex:1;}
+  .fllab{font-size:12.5px;color:var(--muted);margin-bottom:3px;}
+  .flval{font-size:15px;font-weight:600;border-bottom:1.5px dotted #cdd2da;padding-bottom:5px;}
+  /* section */
+  .sec{margin-top:8px;border-radius:12px;padding:20px 18px;transition:opacity .3s, box-shadow .25s, background .25s;
+    position:relative;}
+  .sec.dim{opacity:.4;}
+  .sec.active{background:linear-gradient(0deg,var(--accent-soft),var(--accent-soft));
+    box-shadow:0 0 0 1.5px var(--accent-line), 0 10px 30px -16px var(--accent);}
+  .sech{font-family:'Noto Serif Thai',serif;font-size:15px;font-weight:700;display:flex;align-items:center;
+    gap:9px;margin-bottom:15px;}
+  .sech .nowtag{font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700;color:#fff;background:var(--accent);
+    padding:2px 9px;border-radius:20px;margin-left:auto;}
+  /* read line */
+  .rl{display:flex;align-items:baseline;gap:10px;margin-bottom:13px;}
+  .rl:last-child{margin-bottom:0;}
+  .rl .lab{font-size:13.5px;color:var(--muted);flex:0 0 auto;min-width:78px;}
+  .rl .v{flex:1;border-bottom:1.5px dotted #cdd2da;padding:0 2px 5px;font-size:14.5px;font-weight:500;min-height:22px;}
+  .rl .v.empty{color:var(--faint);font-weight:400;font-style:italic;}
+  .rl .v.block{font-weight:400;line-height:1.65;border-bottom:none;}
+  /* edit controls */
+  .typegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+  .typecard{border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:15px 13px;cursor:pointer;
+    font:inherit;text-align:left;transition:all .15s;}
+  .typecard:hover{border-color:var(--accent-line);}
+  .typecard.on{border-color:var(--accent);background:var(--accent-soft);}
+  .typecard .ic{font-size:20px;}
+  .typecard .nm{font-size:14px;font-weight:600;margin-top:8px;}
+  .typecard .ds{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4;}
+  .lbl{display:block;font-size:13px;font-weight:600;margin-bottom:7px;}
+  .lbl .req{color:#c0392b;}
+  .inp,.ta{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:11px 14px;font:inherit;
+    font-size:15px;background:#fff;color:var(--ink);}
+  .inp:focus,.ta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .ta{resize:none;min-height:84px;line-height:1.55;}
+  .fld{margin-bottom:15px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .urg{display:flex;gap:9px;}
+  .urg button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:11px;font:inherit;
+    font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink);}
+  .urg button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-d);font-weight:700;}
+  .urg .d{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.45;}
+  .urg button.on .d{opacity:1;}
+  .filebox{border:1.5px dashed var(--accent-line);border-radius:10px;padding:16px;text-align:center;
+    font-size:13.5px;color:var(--muted);background:var(--accent-soft);cursor:pointer;}
+  .filebox b{color:var(--accent);}
+  /* approvers */
+  .slot{display:flex;align-items:center;gap:15px;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+    padding:14px 16px;margin-bottom:11px;}
+  .slot.pick{border-style:dashed;border-color:var(--accent-line);}
+  .snum{width:36px;height:36px;border-radius:10px;flex:0 0 auto;background:var(--accent-soft);color:var(--accent-d);
+    font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .sinfo{flex:1;min-width:0;}
+  .srole{font-size:12.5px;color:var(--muted);margin-bottom:3px;}
+  .sname{font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px;}
+  .av{width:34px;height:34px;border-radius:50%;flex:0 0 auto;background:#d9dde3;color:#525a66;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+  .search{display:flex;align-items:center;gap:11px;border:1.5px solid var(--accent-line);background:#fff;
+    border-radius:10px;padding:8px 13px;}
+  .search input{border:none;outline:none;font:inherit;font-size:15px;background:transparent;flex:1;}
+  .pill{font-size:12.5px;font-weight:700;padding:5px 13px;border-radius:30px;flex:0 0 auto;}
+  .pill.fix{background:#eef0f3;color:var(--muted);}
+  .pill.you{background:var(--accent);color:#fff;}
+  .pill.opt{background:#fff;border:1.5px solid var(--line);color:var(--muted);}
+  /* read approvers grid */
+  .siggrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .sigcell{border:1px solid var(--line);border-radius:7px;padding:12px 14px;}
+  .sigcell .r{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;}
+  .sigcell .box{height:46px;margin:8px 0 6px;border-radius:5px;
+    background:repeating-linear-gradient(135deg,#fbfbfa,#fbfbfa 8px,#f1f1ef 8px,#f1f1ef 9px);}
+  .sigcell .nm{font-size:14px;font-weight:600;text-align:center;}
+  /* signature pad */
+  .sigtabs{display:flex;gap:8px;margin-bottom:13px;}
+  .sigtabs button{font:inherit;font-size:13.5px;padding:9px 16px;border-radius:9px;border:1.5px solid var(--line);
+    background:#fff;color:var(--muted);cursor:pointer;}
+  .sigtabs button.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-d);font-weight:700;}
+  .sigpad{height:150px;border:1.5px dashed var(--accent-line);border-radius:11px;
+    background:repeating-linear-gradient(135deg,#fbfbfa,#fbfbfa 9px,#f2f2f0 9px,#f2f2f0 10px);
+    display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:12px;color:var(--faint);}
+  .sighint{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:10px;}
+  .sighint button{background:none;border:none;color:var(--accent);font:inherit;cursor:pointer;font-weight:600;}
+  /* review */
+  .reviewbar{display:flex;align-items:center;gap:14px;background:var(--accent-soft);border:1px solid var(--accent-line);
+    border-radius:12px;padding:16px 18px;margin-top:14px;}
+  .reviewbar .big{font-size:15px;font-weight:700;color:var(--accent-d);}
+  .reviewbar .sm{font-size:12.5px;color:var(--muted);}
+  /* footer nav */
+  .nav{position:fixed;left:272px;right:0;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);padding:16px 32px;display:flex;align-items:center;gap:14px;z-index:10;}
+  .nav .ctx{font-size:13.5px;color:var(--muted);}
+  .nav .ctx b{color:var(--ink);}
+  .btn{font:inherit;font-weight:700;border-radius:11px;cursor:pointer;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink);padding:13px 26px;font-size:15px;}
+  .btn.ghost{border:none;background:none;color:var(--muted);font-weight:600;}
+  .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;margin-left:auto;
+    display:flex;align-items:center;gap:9px;padding:13px 32px;}
+  .btn.send{background:var(--ok);border-color:var(--ok);}
+  .btn:disabled{opacity:.45;cursor:default;}
+  /* responsive */
+  @media (max-width:880px){
+    .shell{flex-direction:column;}
+    .rail{width:auto;height:auto;position:static;border-right:none;border-bottom:1px solid var(--line);padding:16px 16px 12px;}
+    .railtip{display:none;}
+    .steps{flex-direction:row;overflow-x:auto;gap:6px;-webkit-overflow-scrolling:touch;}
+    .step{flex:0 0 auto;flex-direction:column;gap:6px;width:auto;padding:8px 12px;min-width:74px;}
+    .slabel .t{font-size:11.5px;text-align:center;}
+    .slabel .s{display:none;}
+    .brand{margin-bottom:16px;}
+    .stage{padding:18px 12px 130px;}
+    .sheet{padding:30px 22px 34px;}
+    .doc-hd{flex-wrap:wrap;}
+    .docmeta{text-align:left;width:100%;}
+    .reqstrip{flex-direction:column;gap:14px;}
+    .typegrid{grid-template-columns:1fr;}
+    .row2{grid-template-columns:1fr;}
+    .siggrid{grid-template-columns:1fr;}
+    .nav{left:0;padding:14px 16px;}
+    .nav .ctx{display:none;}
+  }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const STEPS = [
+  { t: 'ประเภทคำขอ', s: 'เลือกหมวด' },
+  { t: 'กรอกรายละเอียด', s: 'หัวข้อ · รายละเอียด' },
+  { t: 'เลือกผู้อนุมัติ', s: 'ใครต้องเซ็น' },
+  { t: 'เซ็นรับรอง', s: 'ลายเซ็นผู้ขอ' },
+  { t: 'ตรวจสอบ & ส่ง', s: 'ยืนยันคำขอ' },
+];
+
+function Rail({ step, setStep }) {
+  return (
+    <div className="rail">
+      <div className="brand">
+        <div className="mk">IT</div>
+        <div><b>ระบบขอใช้งาน IT</b><span>สร้างคำขอใหม่</span></div>
+      </div>
+      <div className="steps">
+        {STEPS.map((s, i) => (
+          <button key={i} className={'step ' + (i === step ? 'cur' : i < step ? 'done' : '')} onClick={() => setStep(i)}>
+            <span className="sdot">{i < step ? '✓' : i + 1}</span>
+            <span className="slabel"><span className="t">{s.t}</span><span className="s">{s.s}</span></span>
+          </button>
+        ))}
+      </div>
+      <div className="railtip">💡 ช่องที่บริษัทกำหนดไว้แล้ว คุณไม่ต้องเลือก — กรอกเฉพาะช่องที่ระบบไฮไลต์ให้</div>
+    </div>
+  );
+}
+
+const TYPES = [
+  { ic: '💿', nm: 'ติดตั้งโปรแกรม', ds: 'ขอลงซอฟต์แวร์' },
+  { ic: '🔑', nm: 'ขอสิทธิ์เข้าระบบ', ds: 'เข้าใช้ระบบงาน' },
+  { ic: '🛠️', nm: 'แจ้งซ่อมอุปกรณ์', ds: 'คอม/เครื่องพิมพ์' },
+];
+
+function Sec({ idx, step, title, children }) {
+  const active = step === idx;
+  const dim = step < 4 && !active;
+  return (
+    <div className={'sec ' + (active ? 'active' : dim ? 'dim' : '')}>
+      <h3 className="sech">{title}{active ? <span className="nowtag">กรอกตรงนี้</span> : null}</h3>
+      {children(active)}
+    </div>
+  );
+}
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [type, setType] = useState(0);
+  const [urg, setUrg] = useState(1);
+  const [sigTab, setSigTab] = useState(0);
+  const pct = ((step + 1) / STEPS.length) * 100;
+
+  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const back = () => setStep((s) => Math.max(s - 1, 0));
+
+  return (
+    <div className="shell">
+      <Rail step={step} setStep={setStep} />
+      <div className="main">
+        <div className="topbar"><i style={{ width: pct + '%' }} /></div>
+        <div className="stage">
+          <div className="sheet">
+            {/* header */}
+            <div className="doc-hd">
+              <div className="seal">IT</div>
+              <div className="mid">
+                <div className="org">แผนกเทคโนโลยีสารสนเทศ</div>
+                <h1 className="doctitle">ใบคำขอใช้งาน IT</h1>
+              </div>
+              <div className="docmeta">
+                <div>เลขที่ <b>REQ-2569-00123</b></div>
+                <div>วันที่ <b>3 มิ.ย. 2569</b></div>
+              </div>
+            </div>
+            {/* requester */}
+            <div className="reqstrip">
+              <div className="fl"><div className="fllab">ชื่อผู้ขอ</div><div className="flval">สมชาย ใจดี</div></div>
+              <div className="fl"><div className="fllab">แผนก</div><div className="flval">บัญชี</div></div>
+            </div>
+
+            {/* 1 — type */}
+            <Sec idx={0} step={step} title="ประเภทคำขอ">
+              {(active) => active ? (
+                <div className="typegrid">
+                  {TYPES.map((t, i) => (
+                    <button key={i} className={'typecard ' + (type === i ? 'on' : '')} onClick={() => setType(i)}>
+                      <div className="ic">{t.ic}</div><div className="nm">{t.nm}</div><div className="ds">{t.ds}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rl"><span className="lab"></span><span className="v">{TYPES[type].nm}</span></div>
+              )}
+            </Sec>
+
+            {/* 2 — details */}
+            <Sec idx={1} step={step} title="รายละเอียดคำขอ">
+              {(active) => active ? (
+                <div>
+                  <div className="fld"><label className="lbl">หัวข้อ <span className="req">*</span></label>
+                    <input className="inp" defaultValue="ขอติดตั้งโปรแกรม Photoshop" /></div>
+                  <div className="fld"><label className="lbl">รายละเอียด <span className="req">*</span></label>
+                    <textarea className="ta" defaultValue="ใช้สำหรับงานออกแบบสื่อประชาสัมพันธ์ภายในบริษัท ขอติดตั้งที่เครื่องคอมพิวเตอร์ของแผนกบัญชี" /></div>
+                  <div className="row2">
+                    <div className="fld"><label className="lbl">ความเร่งด่วน</label>
+                      <div className="urg">
+                        {['ปกติ', 'เร่งด่วน', 'ด่วนที่สุด'].map((u, i) => (
+                          <button key={i} className={urg === i ? 'on' : ''} onClick={() => setUrg(i)}><span className="d" />{u}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="fld"><label className="lbl">ต้องการใช้วันที่</label>
+                      <input className="inp" defaultValue="10 มิ.ย. 2569" /></div>
+                  </div>
+                  <div className="fld"><label className="lbl">แนบไฟล์</label>
+                    <div className="filebox"><b>คลิกเพื่อเลือกไฟล์</b> หรือลากมาวาง · PDF, รูปภาพ</div></div>
+                </div>
+              ) : (
+                <div>
+                  <div className="rl"><span className="lab">หัวข้อ</span><span className="v">ขอติดตั้งโปรแกรม Photoshop</span></div>
+                  <div className="rl"><span className="lab">รายละเอียด</span><span className="v block">ใช้สำหรับงานออกแบบสื่อประชาสัมพันธ์ภายในบริษัท ขอติดตั้งที่เครื่องคอมพิวเตอร์ของแผนกบัญชี</span></div>
+                  <div className="rl"><span className="lab">เร่งด่วน</span><span className="v">{['ปกติ', 'เร่งด่วน', 'ด่วนที่สุด'][urg]}</span><span className="lab" style={{ marginLeft: 18 }}>ใช้วันที่</span><span className="v">10 มิ.ย. 2569</span></div>
+                </div>
+              )}
+            </Sec>
+
+            {/* 3 — approvers */}
+            <Sec idx={2} step={step} title="ผู้อนุมัติ">
+              {(active) => active ? (
+                <div>
+                  <div className="slot"><div className="snum">1</div>
+                    <div className="sinfo"><div className="srole">หัวหน้าแผนก</div>
+                      <div className="sname"><span className="av">วช</span>วิชัย มั่นคง</div></div>
+                    <span className="pill fix">กำหนดไว้แล้ว</span></div>
+                  <div className="slot pick"><div className="snum">2</div>
+                    <div className="sinfo"><div className="srole">ผู้จัดการฝ่าย</div>
+                      <div className="search"><span className="av">🔍</span><input placeholder="พิมพ์ชื่อพนักงาน…" /></div></div>
+                    <span className="pill you">เลือกเอง</span></div>
+                  <div className="slot"><div className="snum">3</div>
+                    <div className="sinfo"><div className="srole">หัวหน้าแผนก IT</div>
+                      <div className="sname"><span className="av">ธน</span>ธนา ระบบดี</div></div>
+                    <span className="pill fix">กำหนดไว้แล้ว</span></div>
+                  <div className="slot"><div className="snum">4</div>
+                    <div className="sinfo"><div className="srole">ผู้อนุมัติงบประมาณ</div>
+                      <div className="sname"><span className="av">ปภ</span>ประภา การเงิน</div></div>
+                    <span className="pill you">เลือกเอง</span></div>
+                  <div className="slot"><div className="snum">5</div>
+                    <div className="sinfo"><div className="srole">ผู้บริหาร (ถ้ามี)</div>
+                      <div className="sname" style={{ color: '#9aa1ab', fontWeight: 500, fontSize: 15 }}>ไม่บังคับ — ข้ามได้</div></div>
+                    <span className="pill opt">เลือกหรือข้าม</span></div>
+                </div>
+              ) : (
+                <div className="siggrid">
+                  {[['หัวหน้าแผนก', 'วิชัย มั่นคง', 'กำหนดไว้'], ['ผู้จัดการฝ่าย', 'พิมพ์ชื่อเพื่อเลือก', 'เลือกเอง'], ['หัวหน้าแผนก IT', 'ธนา ระบบดี', 'กำหนดไว้'], ['ผู้อนุมัติงบประมาณ', 'ประภา การเงิน', 'เลือกเอง']].map((c, i) => (
+                    <div className="sigcell" key={i}>
+                      <div className="r"><span>{c[0]}</span><span>{c[2]}</span></div>
+                      <div className="box" /><div className="nm">{c[1]}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Sec>
+
+            {/* 4 — signature */}
+            <Sec idx={3} step={step} title="ลายเซ็นผู้ขอ">
+              {(active) => active ? (
+                <div>
+                  <div className="sigtabs">
+                    <button className={sigTab === 0 ? 'on' : ''} onClick={() => setSigTab(0)}>✎ วาดลายเซ็น</button>
+                    <button className={sigTab === 1 ? 'on' : ''} onClick={() => setSigTab(1)}>⤓ ใช้ลายเซ็นเดิม</button>
+                  </div>
+                  <div className="sigpad">{sigTab === 0 ? 'ลากเมาส์/นิ้วเพื่อเซ็นที่นี่' : 'ดึงลายเซ็นจากระบบ · 021093.jpg'}</div>
+                  <div className="sighint"><span>เซ็นในนามผู้ขอใช้งาน</span><button>ล้าง</button></div>
+                </div>
+              ) : (
+                <div className="siggrid" style={{ gridTemplateColumns: '1fr' }}>
+                  <div className="sigcell"><div className="r"><span>ผู้ขอใช้งาน</span><span>ลงนามแล้ว</span></div><div className="box" /><div className="nm">สมชาย ใจดี</div></div>
+                </div>
+              )}
+            </Sec>
+
+            {/* 5 — review */}
+            {step === 4 ? (
+              <div className="reviewbar">
+                <div>
+                  <div className="big">✓ ตรวจสอบเรียบร้อย พร้อมส่ง</div>
+                  <div className="sm">เมื่อกดส่ง ระบบจะส่งอีเมลแจ้งผู้อนุมัติทั้ง 4 ท่านพร้อมกันโดยอัตโนมัติ</div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* footer nav */}
+      <div className="nav">
+        {step > 0 ? <button className="btn" onClick={back}>← ย้อนกลับ</button> : <span style={{ width: 0 }} />}
+        <button className="btn ghost">บันทึกร่าง</button>
+        <span className="ctx">ขั้นตอน <b>{step + 1}</b> จาก {STEPS.length} · {STEPS[step].t}</span>
+        {step < STEPS.length - 1
+          ? <button className="btn pri" onClick={next}>ถัดไป: {STEPS[step + 1].t} →</button>
+          : <button className="btn pri send" onClick={() => alert('ส่งคำขอเรียบร้อย! ระบบแจ้งผู้อนุมัติทางอีเมลแล้ว')}>✓ ส่งคำขอ</button>}
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
