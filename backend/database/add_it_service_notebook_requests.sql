@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS it_service_notebook_requests (
+  id INT NOT NULL AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  requester_emp_id VARCHAR(20) NOT NULL,
+  requester_name VARCHAR(255) NULL,
+  department VARCHAR(255) NULL,
+  room VARCHAR(255) NULL,
+  start_at DATETIME NOT NULL,
+  end_at DATETIME NOT NULL,
+  notebook_qty INT NOT NULL DEFAULT 1,
+  note TEXT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  approved_by VARCHAR(20) NULL,
+  approved_at DATETIME NULL,
+  returned_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_notebook_request_status (status),
+  INDEX idx_notebook_request_start_end (start_at, end_at),
+  INDEX idx_notebook_request_requester (requester_emp_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

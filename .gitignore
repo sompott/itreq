@@ -1,0 +1,26 @@
+node_modules
+dist
+.vite
+
+# secrets — never commit
+.env
+.env.*.local
+
+# logs
+*.log
+api.err.log
+api.log
+vite.err.log
+vite.log
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# runtime uploads (user files / signatures)
+backend/uploads/
+
+# local Claude Code settings
+.claude/settings.local.json
